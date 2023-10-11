@@ -44,6 +44,7 @@ const (
 		"token results in an inconsistent list - objects that were created, " +
 		"modified, or deleted between the time the first chunk was returned " +
 		"and now may show up in the list."
+	tooLargeResourceVersion string = "Too large resource version"
 )
 
 func interpretListError(err error, paging bool, continueKey, keyPrefix string) error {
@@ -53,6 +54,8 @@ func interpretListError(err error, paging bool, continueKey, keyPrefix string) e
 			return handleCompactedErrorForPaging(continueKey, keyPrefix)
 		}
 		return errors.NewResourceExpired(expired)
+	case err == etcdrpc.ErrFutureRev:
+		return errors.NewTimeoutError(tooLargeResourceVersion, 0)
 	}
 	return err
 }
